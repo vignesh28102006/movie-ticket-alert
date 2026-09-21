@@ -1,0 +1,118 @@
+{
+  "name": "Movie Ticket Release Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Every 1 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/cron/check-alerts",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer super_secret_cron_key_for_ticket_checker_2026"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-cron-check",
+      "name": "Check Ticket Alerts Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.summary.ticketsFound }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "if-tickets-found",
+      "name": "Tickets Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "Tickets Released Successfully"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-success",
+      "name": "Log Release Event",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [920, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Every 1 Min": {
+      "main": [
+        [
+          {
+            "node": "Check Ticket Alerts Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Ticket Alerts Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Tickets Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tickets Found?": {
+      "main": [
+        [
+          {
+            "node": "Log Release Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
