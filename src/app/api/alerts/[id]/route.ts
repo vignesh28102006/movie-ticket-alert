@@ -6,6 +6,7 @@ const updateAlertSchema = z.object({
   theatre_id: z.string().optional(),
   city: z.string().optional(),
   watch_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  language: z.string().min(1).optional(),
   platform: z.enum(['bookmyshow', 'district', 'both']).optional(),
   phone_number: z.string().regex(/^\+?[1-9]\d{7,14}$/).optional(),
   status: z.enum(['WAITING', 'CHECKING', 'RELEASED', 'NOTIFIED', 'CANCELLED', 'ERROR']).optional(),

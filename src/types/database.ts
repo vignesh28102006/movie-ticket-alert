@@ -30,6 +30,7 @@ export interface Alert {
   theatre_id: string;
   city: string;
   watch_date: string;
+  language: string;
   platform: PlatformType;
   phone_number: string;
   status: AlertStatus;
@@ -84,6 +85,7 @@ export interface CreateAlertInput {
   theatre_id: string;
   city: string;
   watch_date: string;
+  language?: string;
   platform: PlatformType;
   phone_number: string;
   simulate_release?: boolean;
@@ -93,6 +95,7 @@ export interface UpdateAlertInput {
   theatre_id?: string;
   city?: string;
   watch_date?: string;
+  language?: string;
   platform?: PlatformType;
   phone_number?: string;
   status?: AlertStatus;

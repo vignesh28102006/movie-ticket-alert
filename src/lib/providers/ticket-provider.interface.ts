@@ -22,6 +22,7 @@ export type ProviderCheckStatus =
 export interface CheckParams {
   movieTitle: string;
   movieSlug?: string;
+  language?: string;
   theatreName: string;
   theatreChain?: string | null;
   city: string;
@@ -55,6 +56,11 @@ export interface ProviderCheckResult {
   shows: ShowInfo[];
   providerName: string;
   responseTimeMs: number;
+
+  /**
+   * Normalized movie language if confirmed by provider.
+   */
+  language?: string;
 
   /**
    * Human-readable reason for the status (especially for errors).

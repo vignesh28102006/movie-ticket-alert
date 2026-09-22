@@ -136,6 +136,7 @@ test('Case A — Correct alert: Browser-reported data triggers CONFIRMED_AVAILAB
     theatre_id: 't1-kg-cinemas-cbe',
     city: 'Coimbatore',
     watch_date: '2026-09-24',
+    language: 'Telugu',
     platform: 'bookmyshow',
     phone_number: '+919876543210',
   });
@@ -146,16 +147,17 @@ test('Case A — Correct alert: Browser-reported data triggers CONFIRMED_AVAILAB
     available: true,
     check_status: 'CONFIRMED_AVAILABLE',
     observed_movie: 'Paradise',
+    observed_language: 'Telugu',
     observed_theatre: 'KG Cinemas',
     observed_date: '2026-09-24',
     shows: [
       {
         showTime: '10:30 AM',
         screenName: 'Screen 1',
-        bookingUrl: 'https://in.bookmyshow.com/buytickets/paradise-coimbatore',
+        bookingUrl: 'https://in.bookmyshow.com/buytickets/paradise-telugu-coimbatore',
       },
     ],
-    source_url: 'https://in.bookmyshow.com/buytickets/paradise-coimbatore',
+    source_url: 'https://in.bookmyshow.com/buytickets/paradise-telugu-coimbatore',
   });
 
   const res = await handleExternalCheck(req);
@@ -168,6 +170,133 @@ test('Case A — Correct alert: Browser-reported data triggers CONFIRMED_AVAILAB
   const updatedAlert = await DataRepository.getAlertById(alert.id);
   assert.equal(updatedAlert?.status, 'NOTIFIED');
   assert.equal(updatedAlert?.alert_sent, true);
+});
+
+test('Case A-2 — Paradise Telugu matches Paradise Telugu', async () => {
+  const alert = await DataRepository.createAlert('user-case-a2', {
+    movie_id: 'm1-paradise',
+    theatre_id: 't1-kg-cinemas-cbe',
+    city: 'Coimbatore',
+    watch_date: '2026-09-24',
+    language: 'Telugu',
+    platform: 'bookmyshow',
+    phone_number: '+919876543210',
+  });
+
+  const req = createApiRequest({
+    alert_id: alert.id,
+    provider: 'bookmyshow',
+    available: true,
+    check_status: 'CONFIRMED_AVAILABLE',
+    observed_movie: 'Paradise',
+    observed_language: 'Telugu',
+    observed_theatre: 'KG Cinemas',
+    observed_date: '2026-09-24',
+    shows: [{ showTime: '02:30 PM', screenName: 'Screen 1' }],
+  });
+
+  const res = await handleExternalCheck(req);
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.equal(data.newStatus, 'NOTIFIED');
+});
+
+test('Case A-3 — Paradise Telugu does NOT match Paradise Tamil', async () => {
+  const alert = await DataRepository.createAlert('user-case-a3', {
+    movie_id: 'm1-paradise',
+    theatre_id: 't1-kg-cinemas-cbe',
+    city: 'Coimbatore',
+    watch_date: '2026-09-24',
+    language: 'Telugu',
+    platform: 'bookmyshow',
+    phone_number: '+919876543210',
+  });
+
+  // Browser reports Paradise Tamil page
+  const req = createApiRequest({
+    alert_id: alert.id,
+    provider: 'bookmyshow',
+    available: true,
+    check_status: 'CONFIRMED_AVAILABLE',
+    observed_movie: 'Paradise',
+    observed_language: 'Tamil', // Mismatched language!
+    observed_theatre: 'KG Cinemas',
+    observed_date: '2026-09-24',
+    shows: [{ showTime: '10:30 AM' }],
+  });
+
+  const res = await handleExternalCheck(req);
+  assert.equal(res.status, 400);
+  const data = await res.json();
+  assert.equal(data.success, false);
+  assert.match(data.error, /Language mismatch/);
+
+  const checkAlert = await DataRepository.getAlertById(alert.id);
+  assert.equal(checkAlert?.status, 'WAITING', 'Alert must stay WAITING');
+});
+
+test('Case A-4 — Paradise Tamil does NOT match Paradise Telugu', async () => {
+  const alert = await DataRepository.createAlert('user-case-a4', {
+    movie_id: 'm1-paradise',
+    theatre_id: 't1-kg-cinemas-cbe',
+    city: 'Coimbatore',
+    watch_date: '2026-09-24',
+    language: 'Tamil',
+    platform: 'bookmyshow',
+    phone_number: '+919876543210',
+  });
+
+  // Browser reports Paradise Telugu page
+  const req = createApiRequest({
+    alert_id: alert.id,
+    provider: 'bookmyshow',
+    available: true,
+    check_status: 'CONFIRMED_AVAILABLE',
+    observed_movie: 'Paradise',
+    observed_language: 'Telugu', // Mismatched language!
+    observed_theatre: 'KG Cinemas',
+    observed_date: '2026-09-24',
+    shows: [{ showTime: '10:30 AM' }],
+  });
+
+  const res = await handleExternalCheck(req);
+  assert.equal(res.status, 400);
+  const data = await res.json();
+  assert.equal(data.success, false);
+  assert.match(data.error, /Language mismatch/);
+
+  const checkAlert = await DataRepository.getAlertById(alert.id);
+  assert.equal(checkAlert?.status, 'WAITING', 'Alert must stay WAITING');
+});
+
+test('Case A-5 — Default alert without explicit language defaults to Tamil and rejects Telugu check', async () => {
+  const alert = await DataRepository.createAlert('user-case-a5', {
+    movie_id: 'm1-paradise',
+    theatre_id: 't1-kg-cinemas-cbe',
+    city: 'Coimbatore',
+    watch_date: '2026-09-24',
+    platform: 'bookmyshow',
+    phone_number: '+919876543210',
+  });
+
+  assert.equal(alert.language, 'Tamil');
+
+  const req = createApiRequest({
+    alert_id: alert.id,
+    provider: 'bookmyshow',
+    available: true,
+    observed_movie: 'Paradise',
+    observed_language: 'Telugu',
+    observed_theatre: 'KG Cinemas',
+    observed_date: '2026-09-24',
+  });
+
+  const res = await handleExternalCheck(req);
+  assert.equal(res.status, 400);
+  const data = await res.json();
+  assert.equal(data.success, false);
+  assert.match(data.error, /Language mismatch/);
 });
 
 test('Case B — Wrong movie: Rejects release when reported movie mismatches alert', async () => {

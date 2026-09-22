@@ -123,14 +123,19 @@ export function AlertCard({ alert, onDelete, onSimulate }: AlertCardProps) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-xl backdrop-blur-sm transition hover:border-zinc-700/80">
-      {/* Top Banner with Movie and Status */}
+      {/* Top Banner with Movie, Language and Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80 pb-4">
         <div>
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-rose-400">
-            {alert.movie?.language || 'Movie'}
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center rounded-md bg-rose-500/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-rose-300 border border-rose-500/30">
+              {alert.language || alert.movie?.language || 'Tamil'}
+            </span>
+          </div>
           <h3 className="text-xl font-bold text-white tracking-tight">
-            {alert.movie?.title || 'Unknown Movie'}
+            {alert.movie?.title || 'Unknown Movie'}{' '}
+            <span className="text-sm font-semibold text-zinc-400">
+              • {alert.language || alert.movie?.language || 'Tamil'}
+            </span>
           </h3>
         </div>
         <div>{renderStatus()}</div>
@@ -149,9 +154,9 @@ export function AlertCard({ alert, onDelete, onSimulate }: AlertCardProps) {
         <div className="flex items-center gap-2.5">
           <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
           <div>
-            <p className="text-[11px] text-zinc-500 font-medium">City & Theatre</p>
+            <p className="text-[11px] text-zinc-500 font-medium">Theatre & City</p>
             <p className="font-semibold text-zinc-200 line-clamp-1">
-              {alert.theatre?.name || 'Selected Theatre'}, {alert.city}
+              {alert.theatre?.name || 'Selected Theatre'} • {alert.city}
             </p>
           </div>
         </div>

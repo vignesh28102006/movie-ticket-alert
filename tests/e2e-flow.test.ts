@@ -11,18 +11,20 @@ test('End-to-End Flow: Create Alert -> Waiting -> Ticket Drop -> Notified -> Ded
   const notifService = new InAppNotificationService();
   const engine = new MonitoringEngine(mockProvider, notifService);
 
-  // Step 1: Create an alert (e.g. Paradise in Coimbatore on 24 Sep 2026 for BookMyShow + District)
+  // Step 1: Create an alert (e.g. Paradise Telugu in Coimbatore on 24 Sep 2026 for BookMyShow + District)
   const alert = await DataRepository.createAlert(userId, {
     movie_id: 'm1-paradise',
     theatre_id: 't1-kg-cinemas-cbe',
     city: 'Coimbatore',
     watch_date: '2026-09-24',
+    language: 'Telugu',
     platform: 'both',
     phone_number: '+919876543210',
     simulate_release: false,
   });
 
   assert.equal(alert.status, 'WAITING');
+  assert.equal(alert.language, 'Telugu');
   assert.equal(alert.alert_sent, false);
   assert.equal(alert.check_count, 0);
 
@@ -49,11 +51,12 @@ test('End-to-End Flow: Create Alert -> Waiting -> Ticket Drop -> Notified -> Ded
   assert.equal(notifiedAlert?.status, 'NOTIFIED');
   assert.equal(notifiedAlert?.alert_sent, true);
 
-  // Step 4: Verify Notification was recorded
+  // Step 4: Verify Notification was recorded with language
   const notifHistory = await DataRepository.getNotifications(userId);
   const relevantNotif = notifHistory.find((n) => n.alert_id === alert.id);
   assert.ok(relevantNotif, 'Notification must be stored in database history');
   assert.ok(relevantNotif?.message.includes('Paradise'));
+  assert.ok(relevantNotif?.message.includes('Telugu'));
 
   // Step 5: Run worker cycle again -> Verify Deduplication Guard (No double notification)
   const notifsBefore = notifHistory.length;
