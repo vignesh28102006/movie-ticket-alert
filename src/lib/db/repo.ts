@@ -20,6 +20,7 @@ class LocalStore {
         theatre_id: 't1-kg-cinemas-cbe',
         city: 'Coimbatore',
         watch_date: '2026-09-24',
+        language: 'Telugu',
         platform: 'both',
         phone_number: '+919876543210',
         status: 'WAITING',
@@ -36,6 +37,7 @@ class LocalStore {
         theatre_id: 't5-pvr-sathyam-chn',
         city: 'Chennai',
         watch_date: '2026-10-02',
+        language: 'Tamil',
         platform: 'bookmyshow',
         phone_number: '+919876543210',
         status: 'RELEASED',
@@ -55,7 +57,7 @@ class LocalStore {
         channel: 'in_app',
         recipient: '+919876543210',
         status: 'SENT',
-        message: '🎬 Tickets Released! Coolie shows are now live at PVR Sathyam Cinemas on 2026-10-02 via BookMyShow.',
+        message: '🎬 Tickets Released! Shows for "Coolie" (Tamil) at PVR Sathyam Cinemas, Chennai on 2026-10-02 are now open for booking via BookMyShow.',
         sent_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
       }
@@ -97,6 +99,7 @@ export class DataRepository {
     const userAlerts = store.alerts.filter((a) => a.user_id === userId);
     return userAlerts.map((alert) => ({
       ...alert,
+      language: alert.language || store.movies.find((m) => m.id === alert.movie_id)?.language || 'Tamil',
       movie: store.movies.find((m) => m.id === alert.movie_id),
       theatre: store.theatres.find((t) => t.id === alert.theatre_id),
     }));
@@ -107,6 +110,7 @@ export class DataRepository {
     if (!alert) return undefined;
     return {
       ...alert,
+      language: alert.language || store.movies.find((m) => m.id === alert.movie_id)?.language || 'Tamil',
       movie: store.movies.find((m) => m.id === alert.movie_id),
       theatre: store.theatres.find((t) => t.id === alert.theatre_id),
     };
@@ -114,6 +118,7 @@ export class DataRepository {
 
   static async createAlert(userId: string, input: CreateAlertInput): Promise<Alert> {
     const now = new Date().toISOString();
+    const movie = store.movies.find((m) => m.id === input.movie_id);
     const newAlert: Alert = {
       id: `alert-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       user_id: userId,
@@ -121,6 +126,7 @@ export class DataRepository {
       theatre_id: input.theatre_id,
       city: input.city,
       watch_date: input.watch_date,
+      language: input.language || movie?.language || 'Tamil',
       platform: input.platform,
       phone_number: input.phone_number,
       status: 'WAITING',
@@ -134,7 +140,7 @@ export class DataRepository {
     store.alerts.unshift(newAlert);
     return {
       ...newAlert,
-      movie: store.movies.find((m) => m.id === newAlert.movie_id),
+      movie,
       theatre: store.theatres.find((t) => t.id === newAlert.theatre_id),
     };
   }
@@ -171,6 +177,7 @@ export class DataRepository {
       .filter((a) => ['WAITING', 'CHECKING', 'ERROR'].includes(a.status))
       .map((alert) => ({
         ...alert,
+        language: alert.language || store.movies.find((m) => m.id === alert.movie_id)?.language || 'Tamil',
         movie: store.movies.find((m) => m.id === alert.movie_id),
         theatre: store.theatres.find((t) => t.id === alert.theatre_id),
       }));

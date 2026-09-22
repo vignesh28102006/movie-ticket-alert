@@ -56,6 +56,7 @@ const externalCheckSchema = z.object({
     ])
     .optional(),
   observed_movie: z.string().optional(),
+  observed_language: z.string().optional(),
   observed_theatre: z.string().optional(),
   observed_date: z.string().optional(),
   shows: z
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
     available,
     check_status,
     observed_movie,
+    observed_language,
     observed_theatre,
     observed_date,
     shows,
@@ -183,7 +185,24 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 3. Theatre match validation (if provided by reporter)
+  // 3. Language match validation (if provided by reporter)
+  if (observed_language) {
+    const alertLang = (alert.language || alert.movie?.language || 'Tamil').toLowerCase().trim();
+    const obsLang = observed_language.toLowerCase().trim();
+    const matchesLang = alertLang === obsLang || alertLang.includes(obsLang) || obsLang.includes(alertLang);
+    if (!matchesLang) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Language mismatch: alert is for '${alert.language || alert.movie?.language || 'Tamil'}', but observed '${observed_language}'`,
+          matched: false,
+        },
+        { status: 400 }
+      );
+    }
+  }
+
+  // 4. Theatre match validation (if provided by reporter)
   if (observed_theatre) {
     const theatreName = alert.theatre?.name?.toLowerCase() || '';
     const obs = observed_theatre.toLowerCase();
@@ -200,7 +219,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 4. Date match validation (if provided by reporter)
+  // 5. Date match validation (if provided by reporter)
   if (observed_date && observed_date !== alert.watch_date) {
     return NextResponse.json(
       {
@@ -271,11 +290,13 @@ export async function POST(request: NextRequest) {
     shows: shows ?? [],
     providerName: `Browser-assisted check (${provider})`,
     responseTimeMs: 0,
+    language: observed_language || alert.language || alert.movie?.language,
     reason: `Confirmed by user browser visiting ${source_url || provider} page`,
     details: {
       source: 'browser_userscript',
       sourceUrl: source_url,
       confirmedBy: 'real_browser_dom',
+      language: observed_language || alert.language || alert.movie?.language,
     },
   };
 

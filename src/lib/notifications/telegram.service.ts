@@ -60,9 +60,11 @@ export class TelegramNotificationService implements INotificationService {
             .join('\n')
         : '  • Click below to check availability';
 
+    const langLine = payload.language ? `🗣️ Language: ${payload.language}\n` : '';
     const text =
       `🚨 <b>TICKET DROP ALERT!</b> 🚨\n\n` +
       `🎬 <b>${payload.movieTitle}</b>\n` +
+      langLine +
       `📅 Date: ${payload.watchDate}\n` +
       `📍 City: ${payload.city}\n` +
       `🏛️ Theatre: ${payload.theatreName}\n` +

@@ -22,7 +22,8 @@ export class InAppNotificationService implements INotificationService {
         ? ` (Shows: ${payload.shows.map((s) => s.showTime).join(', ')})`
         : '';
 
-    const message = `🎬 Tickets Released! Shows for "${payload.movieTitle}" at ${payload.theatreName}, ${payload.city} on ${payload.watchDate} are now open for booking via ${platformLabel}${showSummary}. Alert sent to ${payload.phoneNumber}.`;
+    const movieDisplay = payload.language ? `"${payload.movieTitle}" (${payload.language})` : `"${payload.movieTitle}"`;
+    const message = `🎬 Tickets Released! Shows for ${movieDisplay} at ${payload.theatreName}, ${payload.city} on ${payload.watchDate} are now open for booking via ${platformLabel}${showSummary}. Alert sent to ${payload.phoneNumber}.`;
 
     try {
       const record = await DataRepository.recordNotification({

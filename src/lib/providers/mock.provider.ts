@@ -72,6 +72,7 @@ export class MockTicketProvider implements ITicketProvider {
         ],
         providerName: this.name,
         responseTimeMs: Date.now() - startTime,
+        language: params.language || 'Tamil',
         reason: 'SIMULATED release for testing purposes',
         details: {
           simulated: true,
@@ -79,6 +80,7 @@ export class MockTicketProvider implements ITicketProvider {
           matchCity: params.city,
           matchTheatre: params.theatreName,
           watchDate: params.watchDate,
+          language: params.language || 'Tamil',
         },
       };
     }

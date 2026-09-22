@@ -4,6 +4,7 @@ export interface NotificationPayload {
   alertId: string;
   userId: string;
   movieTitle: string;
+  language?: string;
   theatreName: string;
   watchDate: string;
   city: string;

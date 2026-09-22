@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Movie, Theatre, PlatformType, Alert } from '@/types/database';
-import { Film, Calendar, MapPin, Building, Ticket, Phone, Loader2, CheckCircle } from 'lucide-react';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/lib/constants';
+import { Film, Calendar, MapPin, Building, Ticket, Phone, Loader2, CheckCircle, Globe } from 'lucide-react';
 
 interface AlertFormProps {
   initialAlert?: Alert;
@@ -23,6 +24,9 @@ export function AlertForm({ initialAlert, isEditing = false }: AlertFormProps) {
 
   // Form states
   const [selectedMovieId, setSelectedMovieId] = useState(initialAlert?.movie_id || '');
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    initialAlert?.language || initialAlert?.movie?.language || DEFAULT_LANGUAGE
+  );
   const [selectedCity, setSelectedCity] = useState(initialAlert?.city || 'Coimbatore');
   const [selectedTheatreId, setSelectedTheatreId] = useState(initialAlert?.theatre_id || '');
   const [watchDate, setWatchDate] = useState(initialAlert?.watch_date || '2026-09-24');
@@ -44,6 +48,9 @@ export function AlertForm({ initialAlert, isEditing = false }: AlertFormProps) {
           setMovies(moviesRes.movies);
           if (!selectedMovieId && moviesRes.movies.length > 0) {
             setSelectedMovieId(moviesRes.movies[0].id);
+            if (!initialAlert?.language && moviesRes.movies[0].language) {
+              setSelectedLanguage(moviesRes.movies[0].language);
+            }
             if (moviesRes.movies[0].release_date) {
               setWatchDate(moviesRes.movies[0].release_date);
             }
@@ -70,8 +77,13 @@ export function AlertForm({ initialAlert, isEditing = false }: AlertFormProps) {
   const handleMovieChange = (movieId: string) => {
     setSelectedMovieId(movieId);
     const movie = movies.find((m) => m.id === movieId);
-    if (movie && movie.release_date) {
-      setWatchDate(movie.release_date);
+    if (movie) {
+      if (!isEditing && movie.language) {
+        setSelectedLanguage(movie.language);
+      }
+      if (movie.release_date) {
+        setWatchDate(movie.release_date);
+      }
     }
   };
 
@@ -102,6 +114,11 @@ export function AlertForm({ initialAlert, isEditing = false }: AlertFormProps) {
       setIsSubmitting(false);
       return;
     }
+    if (!selectedLanguage) {
+      setErrorMessage('Please select a movie language');
+      setIsSubmitting(false);
+      return;
+    }
     if (!selectedTheatreId) {
       setErrorMessage('Please select a theatre');
       setIsSubmitting(false);
@@ -119,6 +136,7 @@ export function AlertForm({ initialAlert, isEditing = false }: AlertFormProps) {
         theatre_id: selectedTheatreId,
         city: selectedCity,
         watch_date: watchDate,
+        language: selectedLanguage,
         platform,
         phone_number: phoneNumber,
         simulate_release: simulateRelease,
@@ -185,9 +203,39 @@ export function AlertForm({ initialAlert, isEditing = false }: AlertFormProps) {
               >
                 <div className="flex-1">
                   <p className="font-bold text-white text-sm">{movie.title}</p>
-                  <p className="text-xs text-zinc-400">{movie.language} • Rel: {movie.release_date}</p>
+                  <p className="text-xs text-zinc-400">Default: {movie.language} • Rel: {movie.release_date}</p>
                 </div>
                 {isSelected && <CheckCircle className="h-4 w-4 text-rose-400 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. Movie Language Selection */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
+            <Globe className="h-4 w-4 text-rose-400" />
+            Language Version to Monitor
+          </label>
+          <span className="text-xs text-rose-400 font-medium">Selected: {selectedLanguage}</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {SUPPORTED_LANGUAGES.map((lang) => {
+            const isSelected = selectedLanguage.toLowerCase() === lang.toLowerCase();
+            return (
+              <button
+                key={lang}
+                type="button"
+                onClick={() => setSelectedLanguage(lang)}
+                className={`rounded-xl border py-2.5 px-3 text-xs font-semibold transition text-center ${
+                  isSelected
+                    ? 'border-rose-500 bg-rose-500/20 text-rose-300 ring-1 ring-rose-500 shadow-sm shadow-rose-500/20'
+                    : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-white'
+                }`}
+              >
+                {lang}
               </button>
             );
           })}

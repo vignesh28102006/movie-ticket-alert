@@ -54,6 +54,7 @@ export class CompositeTicketProvider implements ITicketProvider {
         shows: [...bmsResult.shows, ...districtResult.shows],
         providerName: 'BookMyShow + District',
         responseTimeMs: Math.max(bmsResult.responseTimeMs, districtResult.responseTimeMs),
+        language: winningResult.language || params.language,
         reason: `Tickets confirmed by: ${winningResult.providerName}`,
         details: { bms: bmsResult.details, district: districtResult.details },
       };

@@ -51,12 +51,14 @@ export class MonitoringEngine {
     const movieTitle = movie ? movie.title : 'Movie';
     const movieSlug = movie?.slug;
     const theatreName = theatre ? theatre.name : 'Theatre';
+    const language = alert.language || movie?.language || 'Tamil';
 
     try {
       // 3. Query Ticket Provider
       const checkResult = await this.ticketProvider.checkAvailability({
         movieTitle,
         movieSlug,
+        language,
         theatreName,
         theatreChain: theatre?.chain,
         city: alert.city,
@@ -89,6 +91,7 @@ export class MonitoringEngine {
             alertId: alert.id,
             userId: alert.user_id,
             movieTitle,
+            language: checkResult.language || language,
             theatreName,
             watchDate: alert.watch_date,
             city: alert.city,

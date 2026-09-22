@@ -7,6 +7,7 @@ const createAlertSchema = z.object({
   theatre_id: z.string().min(1, 'Theatre selection is required'),
   city: z.string().min(1, 'City is required'),
   watch_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Valid watch date (YYYY-MM-DD) is required'),
+  language: z.string().min(1).default('Tamil'),
   platform: z.enum(['bookmyshow', 'district', 'both'], {
     error: 'Platform must be bookmyshow, district, or both',
   }),
