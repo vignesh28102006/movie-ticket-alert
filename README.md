@@ -169,5 +169,16 @@ npm run build
 
 ---
 
+## 🚧 Remaining Deployment Items
+
+The core application and browser-assisted ticket detection are implemented and tested. Two deployment pieces are intentionally left as future work:
+
+1. **Free 24/7 Cloud Monitoring** — The monitoring worker currently requires a machine or cloud instance that stays online. We are leaving cloud deployment pending until a suitable free cloud option is available.
+2. **Automated Phone Call Notification** — The alert already stores the user's phone number. The final integration will trigger a voice call to that number when tickets are detected and the alert transitions to `NOTIFIED`. A free/low-cost telephony provider that works reliably in India still needs to be selected.
+
+These are the only major infrastructure items currently pending; they do not require redesigning the existing alert, database, or ticket-detection architecture.
+
+---
+
 ## 📜 License
 MIT License. Built for accurate, zero-cost movie ticket release alerts.
